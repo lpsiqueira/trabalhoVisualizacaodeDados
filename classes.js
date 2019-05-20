@@ -9,18 +9,24 @@ class Grafico {
 
         this.svg = this.criaSVG()
         
+        this.dados = undefined
+        this.maximos = undefined        
+    }
+
+    criaEscala() {
+        this.maximos = this.valoresMaximos()
+
         this.scalaX = d3.scaleLinear()
-            .domain([0, 100 /* this.largura - this.margemVertical*2 */])
+            .domain([0, this.maximos.xMax + 50])
             .range([this.margemVertical, this.largura - this.margemVertical])
         this.scalaY = d3.scaleLinear()
-            .domain([this.altura - this.margemHorizontal*2, 0])
+            .domain([this.maximos.yMax + 50, 0])
             .range([this.margemHorizontal, this.altura - this.margemHorizontal])
-
-        
-        this.criaMargens()
     }
 
     criaMargens() {
+        this.criaEscala()
+
         let eixoX = d3.axisBottom().scale(this.scalaX)
         let eixoY = d3.axisLeft().scale(this.scalaY)
 
@@ -41,9 +47,21 @@ class Grafico {
 
         return svg
     }
-}
 
-let el = new Grafico(1000, 1000)
+    valoresMaximos() {
+        let xMaximo = this.dados[0].x
+        let yMaximo = this.dados[0].y
+        for(let ponto of this.dados) {
+            if (ponto.x > xMaximo) {
+                xMaximo = ponto.x
+            }
+            if (ponto.y > yMaximo) {
+                yMaximo = ponto.y
+            }            
+        }
+        return {xMax: xMaximo, yMax: yMaximo}
+    }
+}
 
 class Histograma extends Grafico {
     constructor() {
@@ -52,24 +70,17 @@ class Histograma extends Grafico {
 }
 
 class ScatterPlot extends Grafico {
-    constructor() {
-        super(1000, 1000)
-        console.log(this.largura)
+    constructor(dados) {        
+        super(700, 700)
+        this.dados = dados
+        this.criaMargens()
+        this.preenche()
     }
 
-    criaPonto(x, y) {
-        let pto = d3.select('circle')
-            .attr('cx', this.largura + x)
-            .attr('cy', this.altura - y)
-            .attr('r', 10)
-            .attr('stroke', 'black');
-        return pto
-    }
-
-    preenche(pontos) {
-        let tags = []
-        for(let ponto of pontos) {
-            this.svg.selectAll('circle').data(pontos).enter().append('circle')
+    preenche() {
+        //this.svg.selectAll('g').data([1,2,3,4]).enter().append('g')
+        for(let ponto of this.dados) {
+            this.svg.selectAll('circle').data(this.dados).enter().append('circle')
                 .attr('cx', (d) => {return this.scalaX(d.x)})
                 .attr('cy', (d) => {return this.scalaY(d.y)})
                 .attr('r', 2.5)
@@ -79,12 +90,17 @@ class ScatterPlot extends Grafico {
     }
 }
 
-/* let scatter = new ScatterPlot()
+
 let vetorPontos = [
     {x: 50, y:50},
-    {x: 100, y:100}
+    {x: 100, y:100},
+    {x: 15, y:200},
+    {x: 80, y:400},
+    {x: 70, y:350},
+    {x: 35, y:250},
+    {x: 40, y:150}
 ]
-scatter.preenche(vetorPontos) */
+let scatter = new ScatterPlot(vetorPontos)
 
 class Serie extends Grafico {
     constructor() {
