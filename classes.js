@@ -1,5 +1,7 @@
 'use strict';
 
+let cores = ['blue', 'red', 'yellow', 'green', 'black']
+
 class Grafico {
     constructor (altura=500, largura=500) {
         this.altura = altura
@@ -43,21 +45,24 @@ class Grafico {
         let svg = div.append('svg')
         svg.attr('height', this.altura)
             .attr('width', this.largura)
+            .attr('id', 'svg')
             .style('style', 'color: black');
 
         return svg
     }
 
     valoresMaximos() {
-        let xMaximo = this.dados[0].x
-        let yMaximo = this.dados[0].y
-        for(let ponto of this.dados) {
-            if (ponto.x > xMaximo) {
-                xMaximo = ponto.x
+        let xMaximo = this.dados[0][0].x
+        let yMaximo = this.dados[0][0].y
+        for (let dados of this.dados) {        
+            for(let ponto of dados) {
+                if (ponto.x > xMaximo) {
+                    xMaximo = ponto.x
+                }
+                if (ponto.y > yMaximo) {
+                    yMaximo = ponto.y
+                }            
             }
-            if (ponto.y > yMaximo) {
-                yMaximo = ponto.y
-            }            
         }
         return {xMax: xMaximo, yMax: yMaximo}
     }
@@ -70,23 +75,44 @@ class Histograma extends Grafico {
 }
 
 class ScatterPlot extends Grafico {
-    constructor(dados) {        
+    constructor() {        
         super(700, 700)
-        this.dados = dados
+        this.dados = []
+        this.group = []
+        
+        //console.log(d3.select('#svg'))        
+    }
+
+    atribuiDados(dados) {
+        this.dados.push(dados)
+        this.group.push(d3.select('#svg').append('g'))
+
         this.criaMargens()
+        this.preenche()
+    }
+    
+    atribuiDados2(dados) {
+        this.dados.push(dados)
+        this.group.push(d3.select('#svg').append('g'))
+
         this.preenche()
     }
 
     preenche() {
-        //this.svg.selectAll('g').data([1,2,3,4]).enter().append('g')
-        for(let ponto of this.dados) {
-            this.svg.selectAll('circle').data(this.dados).enter().append('circle')
-                .attr('cx', (d) => {return this.scalaX(d.x)})
-                .attr('cy', (d) => {return this.scalaY(d.y)})
-                .attr('r', 2.5)
-                .attr('stroke', 'black');
+        //d3.select('#svg').append('g')
+        let i = 0
+        for(let dados of this.dados) {
+            console.log(dados)
+            for(let ponto of dados) {
+                this.group[i].selectAll('circle').data(dados).enter().append('circle')
+                    .attr('cx', (d) => {return this.scalaX(d.x)})
+                    .attr('cy', (d) => {return this.scalaY(d.y)})
+                    .attr('r', 2.5)
+                    .attr('stroke', cores[i])
+                    .attr('fill', cores[i]);
+            }
+            i++
         }
-        
     }
 }
 
@@ -100,7 +126,19 @@ let vetorPontos = [
     {x: 35, y:250},
     {x: 40, y:150}
 ]
-let scatter = new ScatterPlot(vetorPontos)
+let vetorPontos2 = [
+    {x: 60, y:70},
+    {x: 110, y:120},
+    {x: 25, y:220},
+    {x: 90, y:420},
+    {x: 80, y:370},
+    {x: 45, y:270},
+    {x: 50, y:170}
+]
+
+let scatter = new ScatterPlot()
+scatter.atribuiDados(vetorPontos)
+scatter.atribuiDados2(vetorPontos2)
 
 class Serie extends Grafico {
     constructor() {
