@@ -159,8 +159,8 @@ let vetorPontos2 = [
 
 /* let scatter = new ScatterPlot()
 scatter.atribuiDados(vetorPontos)
-scatter.atribuiDados(vetorPontos2)
- */
+scatter.atribuiDados(vetorPontos2) */
+
 class Serie extends Grafico {
     constructor() {
         super(700, 700)
@@ -176,7 +176,7 @@ class Serie extends Grafico {
     preenche() {
         let i = 0
         for(let dados of this.dados) {
-            this.group[i].selectAll('polyline').data(this.dados).enter().append('polyline')
+            this.group[i].selectAll('polyline').data([dados]).enter().append('polyline')
                 .attr("points", (d) => {
                     let saida = ''
                     for(let ponto of d) {
