@@ -2,6 +2,15 @@
 
 let cores = ['blue', 'red', 'yellow', 'green', 'black']
 
+let infoGraficoTemplate = {
+    dados: undefined,
+    cor: undefined,
+    titulo: undefined,
+    legendaEixoX: undefined,
+    legendaEixoY: undefined,
+    legenda: undefined
+}
+
 class Grafico {
     constructor (altura=500, largura=500) {
         this.altura = altura
@@ -9,10 +18,12 @@ class Grafico {
         this.margemVertical = 50
         this.margemHorizontal = 50
 
+        this.info = Object.assign({}, infoGraficoTemplate)
+
         this.svg = this.criaSVG()
         
         this.dados = undefined
-        this.maximos = undefined        
+        this.maximos = undefined
     }
 
     criaEscala() {
@@ -20,10 +31,10 @@ class Grafico {
 
         this.scalaX = d3.scaleLinear()
             .domain([0, this.maximos.xMax + 50])
-            .range([this.margemVertical, this.largura - this.margemVertical])
+            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
-            .range([this.margemHorizontal, this.altura - this.margemHorizontal])
+            .range([this.margemVertical, this.altura - this.margemHorizontal])
     }
 
     criaMargens() {
@@ -31,6 +42,17 @@ class Grafico {
 
         let eixoX = d3.axisBottom().scale(this.scalaX)
         let eixoY = d3.axisLeft().scale(this.scalaY)
+        let gridX = d3.axisBottom().scale(this.scalaX).ticks()
+        let gridY = d3.axisLeft().scale(this.scalaY).ticks()
+
+        this.svg.append("g")
+            .attr("transform", `translate(0, ${this.altura - this.margemVertical})`)
+            .attr("class", "grid")
+            .call(gridX.tickSize(-(this.altura - (this.margemHorizontal*2))).tickFormat(''));
+        this.svg.append("g")
+            .attr("transform", `translate(${this.margemHorizontal}, 0)`)
+            .attr("class", "grid")
+            .call(gridY.tickSize(-(this.largura - (this.margemHorizontal*2) - 30)).tickFormat(''));
 
         this.svg.append("g")
             .attr("transform", `translate(0, ${this.altura - this.margemVertical})`)
@@ -78,16 +100,13 @@ class ScatterPlot extends Grafico {
     constructor() {        
         super(700, 700)
         this.dados = []
-        this.group = []
-        
-        //console.log(d3.select('#svg'))        
+        this.group = []    
     }
 
     atribuiDados(dados) {
         this.dados.push(dados)
-        this.group.push(d3.select('#svg').append('g'))
-
         this.criaMargens()
+        this.group.push(d3.select('#svg').append('g'))
         this.preenche()
     }
     
