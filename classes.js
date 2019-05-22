@@ -88,6 +88,14 @@ class Grafico {
         }
         return {xMax: xMaximo, yMax: yMaximo}
     }
+
+    atribuiDados(dados) {
+        this.dados.push(dados)        
+        if (this.dados.length == 1) {
+            this.criaMargens()
+        }
+        this.group.push(d3.select('#svg').append('g'))
+    }
 }
 
 class Histograma extends Grafico {
@@ -97,31 +105,25 @@ class Histograma extends Grafico {
 }
 
 class ScatterPlot extends Grafico {
-    constructor() {        
+    constructor() {
         super(700, 700)
         this.dados = []
-        this.group = []    
+        this.group = []
     }
 
     atribuiDados(dados) {
-        this.dados.push(dados)
-        this.criaMargens()
-        this.group.push(d3.select('#svg').append('g'))
-        this.preenche()
-    }
-    
-    atribuiDados2(dados) {
-        this.dados.push(dados)
-        this.group.push(d3.select('#svg').append('g'))
-
+        /* this.dados.push(dados)        
+        if (this.dados.length == 1) {
+            this.criaMargens()
+        }
+        this.group.push(d3.select('#svg').append('g')) */
+        super.atribuiDados(dados)
         this.preenche()
     }
 
     preenche() {
-        //d3.select('#svg').append('g')
         let i = 0
         for(let dados of this.dados) {
-            console.log(dados)
             for(let ponto of dados) {
                 this.group[i].selectAll('circle').data(dados).enter().append('circle')
                     .attr('cx', (d) => {return this.scalaX(d.x)})
@@ -155,12 +157,61 @@ let vetorPontos2 = [
     {x: 50, y:170}
 ]
 
-let scatter = new ScatterPlot()
+/* let scatter = new ScatterPlot()
 scatter.atribuiDados(vetorPontos)
-scatter.atribuiDados2(vetorPontos2)
-
+scatter.atribuiDados(vetorPontos2)
+ */
 class Serie extends Grafico {
     constructor() {
-        super()
+        super(700, 700)
+        this.dados = []
+        this.group = []
+    }
+
+    atribuiDados(dados) {
+        super.atribuiDados(dados)
+        this.preenche()
+    }
+
+    preenche() {
+        let i = 0
+        for(let dados of this.dados) {
+            this.group[i].selectAll('polyline').data(this.dados).enter().append('polyline')
+                .attr("points", (d) => {
+                    let saida = ''
+                    for(let ponto of d) {
+                        saida += `${this.scalaX(ponto.x)} ${this.scalaY(ponto.y)}, `
+                    }
+                    return saida
+                })
+                .attr('stroke', cores[i])
+                .attr('fill', 'transparent');
+            i++
+        }
     }
 }
+
+let vetorSerie = [
+    {x: 0, y:50},
+    {x: 15, y:200},
+    {x: 35, y:250},
+    {x: 40, y:150},
+    {x: 50, y:50},
+    {x: 70, y:350},
+    {x: 80, y:400},
+    {x: 100, y:100}
+]
+let vetorSerie2 = [
+    {x: 0, y:100},    
+    {x: 25, y:220},
+    {x: 45, y:270},
+    {x: 50, y:170},
+    {x: 60, y:70},
+    {x: 80, y:370},
+    {x: 90, y:420},
+    {x: 110, y:120}
+]
+
+let serie = new Serie()
+serie.atribuiDados(vetorSerie)
+serie.atribuiDados(vetorSerie2)
