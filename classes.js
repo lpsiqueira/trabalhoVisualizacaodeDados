@@ -29,22 +29,9 @@ class Grafico {
         this.eixoY = undefined
     }
 
-    criaEscala() {
-        this.maximos = this.valoresMaximos()
-
-        this.scalaX = d3.scaleLinear()
-            .domain([0, this.maximos.xMax + 50])
-            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
-        this.scalaY = d3.scaleLinear()
-            .domain([this.maximos.yMax + 50, 0])
-            .range([this.margemVertical, this.altura - this.margemHorizontal])
-    }
-
     criaMargens() {
-        //this.criaEscala()
-
-        let eixoX = d3.axisBottom().scale(this.scalaX)
-        let eixoY = d3.axisLeft().scale(this.scalaY)
+        this.eixoX = d3.axisBottom().scale(this.scalaX)
+        this.eixoY = d3.axisLeft().scale(this.scalaY)
         let gridX = d3.axisBottom().scale(this.scalaX).ticks()
         let gridY = d3.axisLeft().scale(this.scalaY).ticks()
 
@@ -59,10 +46,10 @@ class Grafico {
 
         this.svg.append("g")
             .attr("transform", `translate(0, ${this.altura - this.margemVertical})`)
-            .call(eixoX);
+            .call(this.eixoX);
         this.svg.append("g")
             .attr("transform", `translate(${this.margemHorizontal}, 0)`)
-            .call(eixoY);
+            .call(this.eixoY);
     }
 
     criaSVG() {
@@ -95,17 +82,60 @@ class Grafico {
 
 class Histograma extends Grafico {
     constructor() {
-        super()
-        this.dominio = undefined
+        super(700, 700)
+        this.dados = []
+        this.group = []
+        this.dominio = []
     }
 
+    criaEscala(i) {
+        this.maximos = this.valoresMaximos()
 
+        this.dominio = this.dados[0].map((el) => el.x)
+        this.scalaX = d3.scaleBand()
+            .domain(/* [this.dominio[0], this.dominio[this.dominio.legth]] */this.dominio)
+            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
+            .padding(0.4)
+        this.scalaY = d3.scaleLinear()
+            .domain([this.maximos.yMax + 50, 0])
+            .range([this.margemVertical, this.altura - this.margemHorizontal])
+    }
+
+    preenche() {
+        for(let dados of this.dados) {
+            this.group[0].selectAll('rect').data(dados).enter().append('rect')
+                .attr("x", (d) => this.scalaX(d.x))
+                .attr("y", (d) => this.scalaY(d.y))
+                .attr('height', (d) => this.altura - this.margemVertical - this.scalaY(d.y))
+                .attr('width', (d) => this.scalaX.bandwidth())
+                .attr('stroke', cores[0])
+                .attr('fill', cores[0]);
+        }
+    }
 
     atribuiDados(dados) {
-        super.atribuiDados(dados)
+        this.dados.push(dados)
+        this.criaEscala(this.dados.length)
+        super.criaMargens()
+        this.group.push(d3.select('#svg').append('g'))
+        this.preenche()
 
     }
 }
+
+/* let vetorBarras = [
+    {x:1, y:5},
+    {x:2, y:3},
+    {x:3, y:7},
+    {x:4, y:8},
+    {x:5, y:25},
+    {x:6, y:17},
+    {x:7, y:10},
+    {x:8, y:9},
+    {x:9, y:8},
+]
+let hist = new Histograma()
+hist.atribuiDados(vetorBarras) */
 
 class ScatterPlot extends Grafico {
     constructor() {
@@ -152,7 +182,7 @@ class ScatterPlot extends Grafico {
 }
 
 
-let vetorPontos = [
+/* let vetorPontos = [
     {x: 50, y:50},
     {x: 100, y:100},
     {x: 15, y:200},
@@ -173,7 +203,7 @@ let vetorPontos2 = [
 
 let scatter = new ScatterPlot()
 scatter.atribuiDados(vetorPontos)
-scatter.atribuiDados(vetorPontos2)
+scatter.atribuiDados(vetorPontos2) */
 
 class Serie extends Grafico {
     constructor() {
