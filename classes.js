@@ -24,6 +24,9 @@ class Grafico {
         
         this.dados = undefined
         this.maximos = undefined
+
+        this.eixoX = undefined
+        this.eixoY = undefined
     }
 
     criaEscala() {
@@ -38,7 +41,7 @@ class Grafico {
     }
 
     criaMargens() {
-        this.criaEscala()
+        //this.criaEscala()
 
         let eixoX = d3.axisBottom().scale(this.scalaX)
         let eixoY = d3.axisLeft().scale(this.scalaY)
@@ -88,19 +91,19 @@ class Grafico {
         }
         return {xMax: xMaximo, yMax: yMaximo}
     }
-
-    atribuiDados(dados) {
-        this.dados.push(dados)        
-        if (this.dados.length == 1) {
-            this.criaMargens()
-        }
-        this.group.push(d3.select('#svg').append('g'))
-    }
 }
 
 class Histograma extends Grafico {
     constructor() {
-        super()        
+        super()
+        this.dominio = undefined
+    }
+
+
+
+    atribuiDados(dados) {
+        super.atribuiDados(dados)
+
     }
 }
 
@@ -111,13 +114,24 @@ class ScatterPlot extends Grafico {
         this.group = []
     }
 
+    criaEscala() {
+        this.maximos = this.valoresMaximos()
+
+        this.scalaX = d3.scaleLinear()
+            .domain([0, this.maximos.xMax + 50])
+            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
+        this.scalaY = d3.scaleLinear()
+            .domain([this.maximos.yMax + 50, 0])
+            .range([this.margemVertical, this.altura - this.margemHorizontal])
+    }
+
     atribuiDados(dados) {
-        /* this.dados.push(dados)        
+        this.dados.push(dados)
+        this.criaEscala()
         if (this.dados.length == 1) {
-            this.criaMargens()
+            super.criaMargens()
         }
-        this.group.push(d3.select('#svg').append('g')) */
-        super.atribuiDados(dados)
+        this.group.push(d3.select('#svg').append('g'))
         this.preenche()
     }
 
@@ -157,9 +171,9 @@ let vetorPontos2 = [
     {x: 50, y:170}
 ]
 
-/* let scatter = new ScatterPlot()
+let scatter = new ScatterPlot()
 scatter.atribuiDados(vetorPontos)
-scatter.atribuiDados(vetorPontos2) */
+scatter.atribuiDados(vetorPontos2)
 
 class Serie extends Grafico {
     constructor() {
@@ -168,8 +182,24 @@ class Serie extends Grafico {
         this.group = []
     }
 
+    criaEscala() {
+        this.maximos = this.valoresMaximos()
+
+        this.scalaX = d3.scaleLinear()
+            .domain([0, this.maximos.xMax + 50])
+            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
+        this.scalaY = d3.scaleLinear()
+            .domain([this.maximos.yMax + 50, 0])
+            .range([this.margemVertical, this.altura - this.margemHorizontal])
+    }
+
     atribuiDados(dados) {
-        super.atribuiDados(dados)
+        this.dados.push(dados)
+        this.criaEscala()
+        if (this.dados.length == 1) {
+            super.criaMargens()
+        }
+        this.group.push(d3.select('#svg').append('g'))
         this.preenche()
     }
 
@@ -191,7 +221,7 @@ class Serie extends Grafico {
     }
 }
 
-let vetorSerie = [
+/* let vetorSerie = [
     {x: 0, y:50},
     {x: 15, y:200},
     {x: 35, y:250},
@@ -214,4 +244,4 @@ let vetorSerie2 = [
 
 let serie = new Serie()
 serie.atribuiDados(vetorSerie)
-serie.atribuiDados(vetorSerie2)
+serie.atribuiDados(vetorSerie2) */
