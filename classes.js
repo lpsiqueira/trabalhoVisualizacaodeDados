@@ -26,7 +26,7 @@ class Grafico {
         this.maximos = undefined
 
         this.eixoX = undefined
-        this.eixoY = undefined
+        this.eixoY = undefined        
     }
 
     criaMargens() {
@@ -78,6 +78,26 @@ class Grafico {
         }
         return {xMax: xMaximo, yMax: yMaximo}
     }
+
+    /* brushed() {
+        let sel = d3.event.selection
+
+        this.svg.selectAll('circle')
+            .attr('fill', (d, a, b) => {
+                if (this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] &&
+                    this.scalaY(d.y) >= sel[0][1] && this.scalaY(d.y) <= sel[1][1]) {
+                    return 'black'
+                } else {
+                    return cores[b[a].attributes['data-group'].value]
+                }
+            })
+    } */
+
+    adicionaBrush() {
+        this.svg.append('g')
+            .attr('class', 'brush')
+            .call(d3.brush().on('start brush', this.brushed.bind(this)))
+    }
 }
 
 class Histograma extends Grafico {
@@ -108,8 +128,8 @@ class Histograma extends Grafico {
                 .attr("y", (d) => this.scalaY(d.y))
                 .attr('height', (d) => this.altura - this.margemVertical - this.scalaY(d.y))
                 .attr('width', (d) => this.scalaX.bandwidth())
-                .attr('stroke', cores[0])
-                .attr('fill', cores[0]);
+                .attr('fill', cores[0])
+                .attr('data-group', `${this.dados.length-1}`);
         }
     }
 
@@ -117,13 +137,30 @@ class Histograma extends Grafico {
         this.dados.push(dados)
         this.criaEscala(this.dados.length)
         super.criaMargens()
+        super.adicionaBrush()
         this.group.push(d3.select('#svg').append('g'))
         this.preenche()
 
     }
+
+    brushed() {
+        let sel = d3.event.selection
+
+        this.group[0].selectAll('rect')
+            .attr('fill', (d, a, b) => {
+                if (this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] && this.scalaY(d.y) >= sel[0][1] && this.scalaY(d.y) <= sel[1][1] && 
+                        this.scalaX(d.x)+this.scalaX.bandwidth() >= sel[0][0] && this.scalaX(d.x)+this.scalaX.bandwidth() <= sel[1][0] 
+                        ||
+                    this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] && this.scalaY(d.y) <= sel[0][1] && this.scalaY(d.y) <= sel[1][1]) {
+                    return 'black'
+                } else {
+                    return cores[b[a].attributes['data-group'].value]
+                }
+            })
+    }
 }
 
-/* let vetorBarras = [
+let vetorBarras = [
     {x:1, y:5},
     {x:2, y:3},
     {x:3, y:7},
@@ -135,7 +172,7 @@ class Histograma extends Grafico {
     {x:9, y:8},
 ]
 let hist = new Histograma()
-hist.atribuiDados(vetorBarras) */
+hist.atribuiDados(vetorBarras)
 
 class ScatterPlot extends Grafico {
     constructor() {
@@ -160,6 +197,7 @@ class ScatterPlot extends Grafico {
         this.criaEscala()
         if (this.dados.length == 1) {
             super.criaMargens()
+            super.adicionaBrush()
         }
         this.group.push(d3.select('#svg').append('g'))
         this.preenche()
@@ -173,11 +211,39 @@ class ScatterPlot extends Grafico {
                     .attr('cx', (d) => {return this.scalaX(d.x)})
                     .attr('cy', (d) => {return this.scalaY(d.y)})
                     .attr('r', 2.5)
-                    .attr('stroke', cores[i])
-                    .attr('fill', cores[i]);
+                    .attr('class', 'points')
+                    .attr('stroke-width', 0)
+                    .attr('fill', cores[i])
+                    .attr('data-group', `${this.dados.length-1}`);
             }
             i++
         }
+    }
+
+    brushed() {
+        let sel = d3.event.selection
+
+        this.svg.selectAll('circle')
+            .attr('fill', (d, a, b) => {
+                if (this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] &&
+                    this.scalaY(d.y) >= sel[0][1] && this.scalaY(d.y) <= sel[1][1]) {
+                    return 'black'
+                } else {
+                    return cores[b[a].attributes['data-group'].value]
+                }
+            })
+    }
+
+    zoom() {
+        let sel = d3.event.selection
+
+        this.scalaX.domain([this.scalaX(sel[0][0], this.scalaX(sel[1][0]))])
+        //this.svg.select(".brush").call(brush.move, null)
+        xAxis.transition().duration(1000).call(d3.axisBottom(x))
+        this.svg.selectAll("circle")
+            .transition().duration(1000)
+            .attr("cx", (d) => { return this.scalaX(d.x); } )
+            .attr("cy", (d) => { return this.scalaY(d.y); } )
     }
 }
 
@@ -245,10 +311,25 @@ class Serie extends Grafico {
                     return saida
                 })
                 .attr('stroke', cores[i])
-                .attr('fill', 'transparent');
+                .attr('fill', 'transparent')
+                .attr('data-group', `${this.dados.length-1}`);
             i++
         }
     }
+
+    /* brushed() {
+        let sel = d3.event.selection
+
+        this.svg.selectAll('polyline')
+            .attr('stroke', (d, a, b) => {
+                if (this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] &&
+                    this.scalaY(d.y) >= sel[0][1] && this.scalaY(d.y) <= sel[1][1]) {
+                    return 'black'
+                } else {
+                    return cores[b[a].attributes['data-group'].value]
+                }
+            })
+    } */
 }
 
 /* let vetorSerie = [
