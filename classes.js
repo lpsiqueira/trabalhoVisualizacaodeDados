@@ -16,7 +16,8 @@ class Grafico {
         this.altura = altura
         this.largura = largura
         this.margemVertical = 50
-        this.margemHorizontal = 50
+        this.margemHorizontal = 90
+        this.margemEsquerda = this.margemHorizontal + 30
 
         this.info = Object.assign({}, infoGraficoTemplate)
 
@@ -46,11 +47,11 @@ class Grafico {
         this.svg.append("g")
             .attr("transform", `translate(0, ${this.altura - this.margemVertical})`)
             .attr("class", "grid")
-            .call(gridX.tickSize(-(this.altura - (this.margemHorizontal*2))).tickFormat(''));
+            .call(gridX.tickSize(-(this.altura - this.margemVertical*2)).tickFormat(''));
         this.svg.append("g")
             .attr("transform", `translate(${this.margemHorizontal}, 0)`)
             .attr("class", "grid")
-            .call(gridY.tickSize(-(this.largura - (this.margemHorizontal*2) - 30)).tickFormat(''));
+            .call(gridY.tickSize(-(this.largura - (this.margemEsquerda + this.margemHorizontal))).tickFormat('')); /* -(this.largura - (this.margemHorizontal*2) - 30) */
 
         this.svg.append("g")
             .attr('class', 'eixoX')
@@ -116,7 +117,7 @@ class Grafico {
 
 class Histograma extends Grafico {
     constructor() {
-        super(700, 700)
+        super(700, 1000)
         this.dados = []
         this.group = []
         this.dominio = []
@@ -128,11 +129,11 @@ class Histograma extends Grafico {
         this.dominio = this.dados[0].map((el) => el.x)
         this.scalaX = d3.scaleBand()
             .domain(/* [this.dominio[0], this.dominio[this.dominio.legth]] */this.dominio)
-            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
+            .range([this.margemHorizontal, this.largura - (this.margemEsquerda)])
             .padding(0.4)
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
-            .range([this.margemVertical, this.altura - this.margemHorizontal])
+            .range([this.margemVertical, this.altura - this.margemVertical])
     }
 
     preenche() {
@@ -190,7 +191,7 @@ hist.atribuiDados(vetorBarras) */
 
 class ScatterPlot extends Grafico {
     constructor() {
-        super(700, 700)
+        super(700, 1000)
         this.dados = []
         this.group = []
     }
@@ -200,10 +201,10 @@ class ScatterPlot extends Grafico {
 
         this.scalaX = d3.scaleLinear()
             .domain([0, this.maximos.xMax + 50])
-            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
+            .range([this.margemHorizontal, this.largura - (this.margemEsquerda)])
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
-            .range([this.margemVertical, this.altura - this.margemHorizontal])
+            .range([this.margemVertical, this.altura - this.margemHorizontalVertical])
     }
 
     atribuiDados(dados) {
@@ -292,7 +293,7 @@ scatter.atribuiDados(vetorPontos2) */
 
 class Serie extends Grafico {
     constructor() {
-        super(700, 700)
+        super(700, 1000)
         this.dados = []
         this.group = []
     }
@@ -302,10 +303,10 @@ class Serie extends Grafico {
 
         this.scalaX = d3.scaleLinear()
             .domain([0, this.maximos.xMax + 50])
-            .range([this.margemHorizontal, this.largura - (this.margemHorizontal + 30)])
+            .range([this.margemHorizontal, this.largura - (this.margemEsquerda)])
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
-            .range([this.margemVertical, this.altura - this.margemHorizontal])
+            .range([this.margemVertical, this.altura - this.margemVertical])
     }
 
     atribuiDados(dados) {
