@@ -104,12 +104,20 @@ class Grafico {
     }
 
     adicionaZoom() {
-        this.zoom = this.svg.append('rect')
-            .attr('width', this.largura)
+        this.zoomX = this.svg.append('rect')
+            .attr('width', this.margemHorizontal)
             .attr('height', this.altura)
             .attr('fill', 'transparent')
             .attr('class', 'zoom')
-            .call(d3.zoom().on('zoom', this.zoomed.bind(this)))
+            .call(d3.zoom().on('zoom', this.zoomedY.bind(this)))
+
+        this.zoomY = this.svg.append('rect')
+            .attr('y', this.altura - this.margemVertical)
+            .attr('width', this.largura)
+            .attr('height', this.margemVertical)
+            .attr('fill', 'transparent')
+            .attr('class', 'zoom')
+            .call(d3.zoom().on('zoom', this.zoomedX.bind(this)))
     }
     
 }
@@ -258,18 +266,19 @@ class ScatterPlot extends Grafico {
             .attr("cy", (d) => { return this.scalaY(d.y); } ) */
     }
 
-    zoomed() {
+    zoomedX() {
         let novaScalaX = d3.event.transform.rescaleX(this.scalaX)
-        let novaScalaY = d3.event.transform.rescaleY(this.scalaY)
-
-        this.eixoX.scale(novaScalaX)/*  = d3.axisBottom(novaScalaX) */
-        this.eixoY.scale(novaScalaY)/*  = d3.axisLeft(novaScalaY) */
-
+        this.eixoX.scale(novaScalaX)
         this.svg.select('.scalaX').call(this.eixoX)
-        this.svg.select('.scalaY').call(this.eixoY)
-
         this.svg.selectAll('circle')
             .attr('cx', (d) => {return novaScalaX(d.x)})
+    }
+
+    zoomedY() {
+        let novaScalaY = d3.event.transform.rescaleY(this.scalaY)
+        this.eixoY.scale(novaScalaY)
+        this.svg.select('.scalaY').call(this.eixoY)
+        this.svg.selectAll('circle')
             .attr('cy', (d) => {return novaScalaY(d.y)})
     }
 }
@@ -294,9 +303,9 @@ let vetorPontos2 = [
     {x: 50, y:170}
 ]
 
-let scatter = new ScatterPlot()
+/* let scatter = new ScatterPlot()
 scatter.atribuiDados(vetorPontos)
-//scatter.atribuiDados(vetorPontos2)
+scatter.atribuiDados(vetorPontos2) */
 
 class Serie extends Grafico {
     constructor() {
@@ -321,6 +330,7 @@ class Serie extends Grafico {
         this.criaEscala()
         if (this.dados.length == 1) {
             super.criaMargens()
+            super.adicionaZoom()
         }
         this.group.push(d3.select('#svg').append('g'))
         this.preenche()
@@ -357,9 +367,27 @@ class Serie extends Grafico {
                 }
             })
     } */
+
+    zoomedX() {
+        let t = d3.event.transform
+        let novaScalaX = t.rescaleX(this.scalaX)
+        this.eixoX.scale(novaScalaX)
+        this.svg.select('.scalaX').call(this.eixoX)
+        this.svg.selectAll('polyline')
+            .attr('transform', `translate(${t.x}, 0)`)
+    }
+
+    zoomedY() {
+        let t = d3.event.transform
+        let novaScalaY = t.rescaleY(this.scalaY)
+        this.eixoY.scale(novaScalaY)
+        this.svg.select('.scalaY').call(this.eixoY)
+        this.svg.selectAll('polyline')
+            .attr('transform', `translate(0, ${t.y})`)
+    }
 }
 
-/* let vetorSerie = [
+let vetorSerie = [
     {x: 0, y:50},
     {x: 15, y:200},
     {x: 35, y:250},
@@ -382,4 +410,4 @@ let vetorSerie2 = [
 
 let serie = new Serie()
 serie.atribuiDados(vetorSerie)
-serie.atribuiDados(vetorSerie2) */
+serie.atribuiDados(vetorSerie2)
