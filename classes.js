@@ -45,9 +45,11 @@ class Grafico {
             .call(gridY.tickSize(-(this.largura - (this.margemHorizontal*2) - 30)).tickFormat(''));
 
         this.svg.append("g")
+            .attr('class', 'scalaX')
             .attr("transform", `translate(0, ${this.altura - this.margemVertical})`)
             .call(this.eixoX);
         this.svg.append("g")
+            .attr('class', 'scalaY')
             .attr("transform", `translate(${this.margemHorizontal}, 0)`)
             .call(this.eixoY);
     }
@@ -94,10 +96,22 @@ class Grafico {
     } */
 
     adicionaBrush() {
-        this.svg.append('g')
+        this.brush = this.svg.append('g')
             .attr('class', 'brush')
             .call(d3.brush().on('start brush', this.brushed.bind(this)))
+        /* this.svg.select('.brush')
+            .call(d3.brush().on('brush', this.zoom.bind(this))) */
     }
+
+    adicionaZoom() {
+        this.zoom = this.svg.append('rect')
+            .attr('width', this.largura)
+            .attr('height', this.altura)
+            .attr('fill', 'transparent')
+            .attr('class', 'zoom')
+            .call(d3.zoom().on('zoom', this.zoomed.bind(this)))
+    }
+    
 }
 
 class Histograma extends Grafico {
@@ -160,7 +174,7 @@ class Histograma extends Grafico {
     }
 }
 
-let vetorBarras = [
+/* let vetorBarras = [
     {x:1, y:5},
     {x:2, y:3},
     {x:3, y:7},
@@ -172,7 +186,7 @@ let vetorBarras = [
     {x:9, y:8},
 ]
 let hist = new Histograma()
-hist.atribuiDados(vetorBarras)
+hist.atribuiDados(vetorBarras) */
 
 class ScatterPlot extends Grafico {
     constructor() {
@@ -198,6 +212,7 @@ class ScatterPlot extends Grafico {
         if (this.dados.length == 1) {
             super.criaMargens()
             super.adicionaBrush()
+            super.adicionaZoom()
         }
         this.group.push(d3.select('#svg').append('g'))
         this.preenche()
@@ -232,23 +247,35 @@ class ScatterPlot extends Grafico {
                     return cores[b[a].attributes['data-group'].value]
                 }
             })
-    }
 
-    zoom() {
-        let sel = d3.event.selection
-
-        this.scalaX.domain([this.scalaX(sel[0][0], this.scalaX(sel[1][0]))])
+        /* //this.zoom(sel)
+        this.scalaX.domain([this.scalaX.invert(sel[0][0]), this.scalaX.invert(sel[1][0])])
         //this.svg.select(".brush").call(brush.move, null)
-        xAxis.transition().duration(1000).call(d3.axisBottom(x))
+        d3.transition(this.eixoX).duration(1000).call(d3.axisBottom(this.scalaX))
         this.svg.selectAll("circle")
             .transition().duration(1000)
             .attr("cx", (d) => { return this.scalaX(d.x); } )
-            .attr("cy", (d) => { return this.scalaY(d.y); } )
+            .attr("cy", (d) => { return this.scalaY(d.y); } ) */
+    }
+
+    zoomed() {
+        let novaScalaX = d3.event.transform.rescaleX(this.scalaX)
+        let novaScalaY = d3.event.transform.rescaleY(this.scalaY)
+
+        this.eixoX.scale(novaScalaX)/*  = d3.axisBottom(novaScalaX) */
+        this.eixoY.scale(novaScalaY)/*  = d3.axisLeft(novaScalaY) */
+
+        this.svg.select('.scalaX').call(this.eixoX)
+        this.svg.select('.scalaY').call(this.eixoY)
+
+        this.svg.selectAll('circle')
+            .attr('cx', (d) => {return novaScalaX(d.x)})
+            .attr('cy', (d) => {return novaScalaY(d.y)})
     }
 }
 
 
-/* let vetorPontos = [
+let vetorPontos = [
     {x: 50, y:50},
     {x: 100, y:100},
     {x: 15, y:200},
@@ -269,7 +296,7 @@ let vetorPontos2 = [
 
 let scatter = new ScatterPlot()
 scatter.atribuiDados(vetorPontos)
-scatter.atribuiDados(vetorPontos2) */
+//scatter.atribuiDados(vetorPontos2)
 
 class Serie extends Grafico {
     constructor() {
