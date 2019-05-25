@@ -29,6 +29,14 @@ class Grafico {
         this.eixoY = undefined        
     }
 
+    adicionaLabels(titulo, labelX, labelY) {
+        this.info.titulo = titulo
+        this.info.legendaEixoX = this.svg.append('text')
+            .attr('transform', `translate(${this.largura/2} ,${this.altura-10})`)
+            .text(labelX)
+        this.info.legendaEixoY = this.svg.select('.eixoY').append('text').text(labelY)       
+    }
+
     criaMargens() {
         this.eixoX = d3.axisBottom().scale(this.scalaX)
         this.eixoY = d3.axisLeft().scale(this.scalaY)
@@ -45,11 +53,11 @@ class Grafico {
             .call(gridY.tickSize(-(this.largura - (this.margemHorizontal*2) - 30)).tickFormat(''));
 
         this.svg.append("g")
-            .attr('class', 'scalaX')
+            .attr('class', 'eixoX')
             .attr("transform", `translate(0, ${this.altura - this.margemVertical})`)
             .call(this.eixoX);
         this.svg.append("g")
-            .attr('class', 'scalaY')
+            .attr('class', 'eixoY')
             .attr("transform", `translate(${this.margemHorizontal}, 0)`)
             .call(this.eixoY);
     }
@@ -81,26 +89,10 @@ class Grafico {
         return {xMax: xMaximo, yMax: yMaximo}
     }
 
-    /* brushed() {
-        let sel = d3.event.selection
-
-        this.svg.selectAll('circle')
-            .attr('fill', (d, a, b) => {
-                if (this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] &&
-                    this.scalaY(d.y) >= sel[0][1] && this.scalaY(d.y) <= sel[1][1]) {
-                    return 'black'
-                } else {
-                    return cores[b[a].attributes['data-group'].value]
-                }
-            })
-    } */
-
     adicionaBrush() {
         this.brush = this.svg.append('g')
             .attr('class', 'brush')
             .call(d3.brush().on('start brush', this.brushed.bind(this)))
-        /* this.svg.select('.brush')
-            .call(d3.brush().on('brush', this.zoom.bind(this))) */
     }
 
     adicionaZoom() {
@@ -255,21 +247,12 @@ class ScatterPlot extends Grafico {
                     return cores[b[a].attributes['data-group'].value]
                 }
             })
-
-        /* //this.zoom(sel)
-        this.scalaX.domain([this.scalaX.invert(sel[0][0]), this.scalaX.invert(sel[1][0])])
-        //this.svg.select(".brush").call(brush.move, null)
-        d3.transition(this.eixoX).duration(1000).call(d3.axisBottom(this.scalaX))
-        this.svg.selectAll("circle")
-            .transition().duration(1000)
-            .attr("cx", (d) => { return this.scalaX(d.x); } )
-            .attr("cy", (d) => { return this.scalaY(d.y); } ) */
     }
 
     zoomedX() {
         let novaScalaX = d3.event.transform.rescaleX(this.scalaX)
         this.eixoX.scale(novaScalaX)
-        this.svg.select('.scalaX').call(this.eixoX)
+        this.svg.select('.eixoX').call(this.eixoX)
         this.svg.selectAll('circle')
             .attr('cx', (d) => {return novaScalaX(d.x)})
     }
@@ -277,7 +260,7 @@ class ScatterPlot extends Grafico {
     zoomedY() {
         let novaScalaY = d3.event.transform.rescaleY(this.scalaY)
         this.eixoY.scale(novaScalaY)
-        this.svg.select('.scalaY').call(this.eixoY)
+        this.svg.select('.eixoY').call(this.eixoY)
         this.svg.selectAll('circle')
             .attr('cy', (d) => {return novaScalaY(d.y)})
     }
@@ -372,7 +355,7 @@ class Serie extends Grafico {
         let t = d3.event.transform
         let novaScalaX = t.rescaleX(this.scalaX)
         this.eixoX.scale(novaScalaX)
-        this.svg.select('.scalaX').call(this.eixoX)
+        this.svg.select('.eixoX').call(this.eixoX)
         this.svg.selectAll('polyline')
             .attr('transform', `translate(${t.x}, 0)`)
     }
@@ -381,7 +364,7 @@ class Serie extends Grafico {
         let t = d3.event.transform
         let novaScalaY = t.rescaleY(this.scalaY)
         this.eixoY.scale(novaScalaY)
-        this.svg.select('.scalaY').call(this.eixoY)
+        this.svg.select('.eixoY').call(this.eixoY)
         this.svg.selectAll('polyline')
             .attr('transform', `translate(0, ${t.y})`)
     }
@@ -411,3 +394,4 @@ let vetorSerie2 = [
 let serie = new Serie()
 serie.atribuiDados(vetorSerie)
 serie.atribuiDados(vetorSerie2)
+serie.adicionaLabels('afdfadsfad', 'dfadsfadsfads', 'dsfasdfgadsfads')
