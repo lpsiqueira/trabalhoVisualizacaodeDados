@@ -8,13 +8,81 @@
     <title>Document</title>
 </head>
 <body id="body">
-    <div id="d3"></div>
+    <div id="d3-1"></div>
+    <div id="d3-2"></div>
+    <div id="d3-3"></div>
 
-    <script>
-        //console.log(d3.select('#d3'))
-    </script>
     <script src="./d3/d3.js"></script>
-    <script src="classes.js">
-    </script>    
+    <script src="classes.js"></script>
+    <script>
+            let vetorBarras = [
+                {x:1, y:5},
+                {x:2, y:3},
+                {x:3, y:7},
+                {x:4, y:8},
+                {x:5, y:25},
+                {x:6, y:17},
+                {x:7, y:10},
+                {x:8, y:9},
+                {x:9, y:8},
+                {x:10, y:35}
+            ]
+            let hist = new Histograma('d3-1')
+            hist.atribuiDados(vetorBarras)
+            hist.adicionaLabels('Histograma', 'eixo X', 'eixo Y')
+            hist.adicionaLegenda(['Dados 1'])
+
+            let vetorPontos = [
+                {x: 50, y:50},
+                {x: 100, y:100},
+                {x: 15, y:200},
+                {x: 80, y:400},
+                {x: 70, y:350},
+                {x: 35, y:250},
+                {x: 40, y:150}
+            ]
+            let vetorPontos2 = [
+                {x: 60, y:70},
+                {x: 110, y:120},
+                {x: 25, y:220},
+                {x: 90, y:420},
+                {x: 80, y:370},
+                {x: 45, y:270},
+                {x: 50, y:170}
+            ]
+
+            let scatter = new ScatterPlot('d3-2')
+            scatter.atribuiDados(vetorPontos)
+            scatter.atribuiDados(vetorPontos2)
+            scatter.adicionaLabels('Scatter Plot', 'eixo X', 'eixo Y')
+            scatter.adicionaLegenda(['Grupo 1', 'Grupo 2'])
+
+            let vetorSerie = [
+                {x: 0, y:50},
+                {x: 15, y:200},
+                {x: 35, y:250},
+                {x: 40, y:150},
+                {x: 50, y:50},
+                {x: 70, y:350},
+                {x: 80, y:400},
+                {x: 100, y:100}
+            ]
+            let vetorSerie2 = [
+                {x: 0, y:100},    
+                {x: 25, y:220},
+                {x: 45, y:270},
+                {x: 50, y:170},
+                {x: 60, y:70},
+                {x: 80, y:370},
+                {x: 90, y:420},
+                {x: 110, y:120}
+            ]
+
+            let serie = new Serie('d3-3')
+            serie.atribuiDados(vetorSerie)
+            serie.atribuiDados(vetorSerie2)
+            serie.adicionaLabels('Serie', 'eixo X', 'eixo Y')
+            serie.adicionaLegenda(['Grupo 1', 'Grupo 2'])
+    </script>
 </body>
 </html>

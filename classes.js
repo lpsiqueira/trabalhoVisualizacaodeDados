@@ -12,16 +12,19 @@ let infoGraficoTemplate = {
 }
 
 class Grafico {
-    constructor (altura=500, largura=500) {
+    constructor (tag, altura, largura) {
+        this.tag = '#' + tag
+        this.tagsemhash = tag
+
         this.altura = altura
         this.largura = largura
         this.margemVertical = 50
         this.margemHorizontal = 90
-        this.margemEsquerda = this.margemHorizontal + 30
+        this.margemDireita = this.margemHorizontal + 40
 
         this.info = Object.assign({}, infoGraficoTemplate)
 
-        this.div = d3.select('#d3')
+        this.div = d3.select(this.tag)
         this.svg = this.criaSVG()
         
         this.dados = undefined
@@ -31,17 +34,39 @@ class Grafico {
         this.eixoY = undefined        
     }
 
-    adicionaLegenda() {
-        console.log()
+    adicionaLegenda(texto) {
+        let posY = this.margemVertical+10
+        let posX = this.largura-this.margemDireita+10
+        let legenda = this.svg.append('g')
+            .attr('class', 'legenda');
+        legenda.append('text')
+            .attr('x', posX)
+            .attr('y', posY)
+            .text('Legenda:');
+        posY+=50;
+        for (let i=0; i<this.group.length; i++) {            
+            legenda.append('rect')
+                .attr('x', posX)
+                .attr('y', posY)
+                .attr('height', 20)
+                .attr('width', 30)
+                .attr('fill', cores[i]);
+            posY+=40;
+            legenda.append('text')
+                .attr('x', posX)
+                .attr('y', posY)
+                .text(texto[i]);
+            posY+=30;            
+        }
     }
 
     adicionaLabels(titulo, labelX, labelY) {
         this.info.titulo = this.svg.append('text')
-            .attr('transform', `translate(${(this.largura-this.margemHorizontal-this.margemEsquerda)/2}, ${this.margemVertical-20})`)
+            .attr('transform', `translate(${(this.largura-this.margemHorizontal-this.margemDireita)/2}, ${this.margemVertical-20})`)
             .attr('class', 'titulo')
             .text(titulo)
         this.info.legendaEixoX = this.svg.append('text')
-            .attr('transform', `translate(${this.largura-this.margemEsquerda-100}, ${this.altura-this.margemVertical+40})`)
+            .attr('transform', `translate(${this.largura-this.margemDireita-100}, ${this.altura-this.margemVertical+40})`)
             .attr('class', 'label')
             .text(labelX)
         this.info.legendaEixoY = this.svg.append('text')
@@ -63,7 +88,7 @@ class Grafico {
         this.svg.append("g")
             .attr("transform", `translate(${this.margemHorizontal}, 0)`)
             .attr("class", "grid gridY")
-            .call(this.gridY.tickSize(-(this.largura - (this.margemEsquerda + this.margemHorizontal))).tickFormat(''));
+            .call(this.gridY.tickSize(-(this.largura - (this.margemDireita + this.margemHorizontal))).tickFormat(''));
 
         this.svg.append("g")
             .attr('class', 'eixoX')
@@ -76,11 +101,10 @@ class Grafico {
     }
 
     criaSVG() {
-        let div = d3.select('body').append('div')
-        let svg = div.append('svg')
+        let svg = this.div.append('svg')
         svg.attr('height', this.altura)
             .attr('width', this.largura)
-            .attr('id', 'svg')
+            .attr('class', 'svg')
             .style('style', 'color: black');
 
         return svg
@@ -128,8 +152,8 @@ class Grafico {
 }
 
 class Histograma extends Grafico {
-    constructor() {
-        super(700, 1000)
+    constructor(tag, altura=700, largura=1000) {
+        super(tag, altura, largura)
         this.dados = []
         this.group = []
         this.dominio = []
@@ -140,8 +164,8 @@ class Histograma extends Grafico {
 
         this.dominio = this.dados[0].map((el) => el.x)
         this.scalaX = d3.scaleBand()
-            .domain(/* [this.dominio[0], this.dominio[this.dominio.legth]] */this.dominio)
-            .range([this.margemHorizontal, this.largura - (this.margemEsquerda)])
+            .domain(this.dominio)
+            .range([this.margemHorizontal, this.largura - (this.margemDireita)])
             .padding(0.4)
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
@@ -165,7 +189,8 @@ class Histograma extends Grafico {
         this.criaEscala(this.dados.length)
         super.criaMargens()
         super.adicionaBrush()
-        this.group.push(d3.select('#svg').append('g'))
+        let svg = document.getElementById(this.tagsemhash).querySelector('.svg')
+        this.group.push(d3.select(svg).append('g'))
         this.preenche()
 
     }
@@ -187,25 +212,9 @@ class Histograma extends Grafico {
     }
 }
 
-let vetorBarras = [
-    {x:1, y:5},
-    {x:2, y:3},
-    {x:3, y:7},
-    {x:4, y:8},
-    {x:5, y:25},
-    {x:6, y:17},
-    {x:7, y:10},
-    {x:8, y:9},
-    {x:9, y:8},
-    {x:10, y:35}
-]
-/* let hist = new Histograma()
-hist.atribuiDados(vetorBarras)
-hist.adicionaLabels('fdgsikjhdfkjjhfsdokjh', 'lucas dfgasdfad', 'dfadsfadsfdsf') */
-
 class ScatterPlot extends Grafico {
-    constructor() {
-        super(700, 1000)
+    constructor(tag, altura=700, largura=1000) {
+        super(tag, altura, largura)
         this.dados = []
         this.group = []
     }
@@ -215,7 +224,7 @@ class ScatterPlot extends Grafico {
 
         this.scalaX = d3.scaleLinear()
             .domain([0, this.maximos.xMax + 50])
-            .range([this.margemHorizontal, this.largura - (this.margemEsquerda)])
+            .range([this.margemHorizontal, this.largura - (this.margemDireita)])
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
             .range([this.margemVertical, this.altura - this.margemVertical])
@@ -229,7 +238,8 @@ class ScatterPlot extends Grafico {
             super.adicionaBrush()
             super.adicionaZoom()
         }
-        this.group.push(d3.select('#svg').append('g'))
+        let svg = document.getElementById(this.tagsemhash).querySelector('.svg')
+        this.group.push(d3.select(svg).append('g'))
         this.preenche()
     }
 
@@ -285,33 +295,9 @@ class ScatterPlot extends Grafico {
     }
 }
 
-
-let vetorPontos = [
-    {x: 50, y:50},
-    {x: 100, y:100},
-    {x: 15, y:200},
-    {x: 80, y:400},
-    {x: 70, y:350},
-    {x: 35, y:250},
-    {x: 40, y:150}
-]
-let vetorPontos2 = [
-    {x: 60, y:70},
-    {x: 110, y:120},
-    {x: 25, y:220},
-    {x: 90, y:420},
-    {x: 80, y:370},
-    {x: 45, y:270},
-    {x: 50, y:170}
-]
-
-/* let scatter = new ScatterPlot()
-scatter.atribuiDados(vetorPontos)
-scatter.atribuiDados(vetorPontos2) */
-
 class Serie extends Grafico {
-    constructor() {
-        super(700, 1000)
+    constructor(tag, altura=700, largura=1000) {
+        super(tag, altura, largura)
         this.dados = []
         this.group = []
     }
@@ -321,7 +307,7 @@ class Serie extends Grafico {
 
         this.scalaX = d3.scaleLinear()
             .domain([0, this.maximos.xMax + 50])
-            .range([this.margemHorizontal, this.largura - (this.margemEsquerda)])
+            .range([this.margemHorizontal, this.largura - (this.margemDireita)])
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
             .range([this.margemVertical, this.altura - this.margemVertical])
@@ -334,7 +320,8 @@ class Serie extends Grafico {
             super.criaMargens()
             super.adicionaZoom()
         }
-        this.group.push(d3.select('#svg').append('g'))
+        let svg = document.getElementById(this.tagsemhash).querySelector('.svg')
+        this.group.push(d3.select(svg).append('g'))
         this.preenche()
     }
 
@@ -382,39 +369,13 @@ class Serie extends Grafico {
     }
 
     zoomedY() {
-        let t = d3.event.transform
+        /* let t = d3.event.transform
         let novaScalaY = t.rescaleY(this.scalaY)
         this.eixoY.scale(novaScalaY)
         this.gridY.scale(novaScalaY)
         this.svg.select('.eixoY').call(this.eixoY)
         this.svg.select('.gridY').call(this.gridY)
         this.svg.selectAll('polyline')
-            .attr('transform', `translate(0 ${t.y})`)
+            .attr('transform', `translate(0 ${t.y})`) */
     }
 }
-
-let vetorSerie = [
-    {x: 0, y:50},
-    {x: 15, y:200},
-    {x: 35, y:250},
-    {x: 40, y:150},
-    {x: 50, y:50},
-    {x: 70, y:350},
-    {x: 80, y:400},
-    {x: 100, y:100}
-]
-let vetorSerie2 = [
-    {x: 0, y:100},    
-    {x: 25, y:220},
-    {x: 45, y:270},
-    {x: 50, y:170},
-    {x: 60, y:70},
-    {x: 80, y:370},
-    {x: 90, y:420},
-    {x: 110, y:120}
-]
-
-let serie = new Serie()
-serie.atribuiDados(vetorSerie)
-serie.atribuiDados(vetorSerie2)
-serie.adicionaLabels('afdfadsfad', 'dfadsfadsfads', 'dsfasdfgadsfads')
