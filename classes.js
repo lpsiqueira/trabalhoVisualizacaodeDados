@@ -21,6 +21,7 @@ class Grafico {
 
         this.info = Object.assign({}, infoGraficoTemplate)
 
+        this.div = d3.select('#d3')
         this.svg = this.criaSVG()
         
         this.dados = undefined
@@ -30,28 +31,39 @@ class Grafico {
         this.eixoY = undefined        
     }
 
+    adicionaLegenda() {
+        console.log()
+    }
+
     adicionaLabels(titulo, labelX, labelY) {
-        this.info.titulo = titulo
+        this.info.titulo = this.svg.append('text')
+            .attr('transform', `translate(${(this.largura-this.margemHorizontal-this.margemEsquerda)/2}, ${this.margemVertical-20})`)
+            .attr('class', 'titulo')
+            .text(titulo)
         this.info.legendaEixoX = this.svg.append('text')
-            .attr('transform', `translate(${this.largura/2} ,${this.altura-10})`)
+            .attr('transform', `translate(${this.largura-this.margemEsquerda-100}, ${this.altura-this.margemVertical+40})`)
+            .attr('class', 'label')
             .text(labelX)
-        this.info.legendaEixoY = this.svg.select('.eixoY').append('text').text(labelY)       
+        this.info.legendaEixoY = this.svg.append('text')
+            .attr('transform', `translate(${this.margemHorizontal-40}, ${this.margemVertical+100}) rotate(-90)`)
+            .attr('class', 'label')
+            .text(labelY)
     }
 
     criaMargens() {
         this.eixoX = d3.axisBottom().scale(this.scalaX)
         this.eixoY = d3.axisLeft().scale(this.scalaY)
-        let gridX = d3.axisBottom().scale(this.scalaX).ticks()
-        let gridY = d3.axisLeft().scale(this.scalaY).ticks()
+        this.gridX = d3.axisBottom().scale(this.scalaX).ticks()
+        this.gridY = d3.axisLeft().scale(this.scalaY).ticks()
 
         this.svg.append("g")
             .attr("transform", `translate(0, ${this.altura - this.margemVertical})`)
-            .attr("class", "grid")
-            .call(gridX.tickSize(-(this.altura - this.margemVertical*2)).tickFormat(''));
+            .attr("class", "grid gridX")
+            .call(this.gridX.tickSize(-(this.altura - this.margemVertical*2)).tickFormat(''));
         this.svg.append("g")
             .attr("transform", `translate(${this.margemHorizontal}, 0)`)
-            .attr("class", "grid")
-            .call(gridY.tickSize(-(this.largura - (this.margemEsquerda + this.margemHorizontal))).tickFormat('')); /* -(this.largura - (this.margemHorizontal*2) - 30) */
+            .attr("class", "grid gridY")
+            .call(this.gridY.tickSize(-(this.largura - (this.margemEsquerda + this.margemHorizontal))).tickFormat(''));
 
         this.svg.append("g")
             .attr('class', 'eixoX')
@@ -97,14 +109,14 @@ class Grafico {
     }
 
     adicionaZoom() {
-        this.zoomX = this.svg.append('rect')
+        this.zoomY = this.svg.append('rect')
             .attr('width', this.margemHorizontal)
             .attr('height', this.altura)
             .attr('fill', 'transparent')
             .attr('class', 'zoom')
             .call(d3.zoom().on('zoom', this.zoomedY.bind(this)))
 
-        this.zoomY = this.svg.append('rect')
+        this.zoomX = this.svg.append('rect')
             .attr('y', this.altura - this.margemVertical)
             .attr('width', this.largura)
             .attr('height', this.margemVertical)
@@ -175,7 +187,7 @@ class Histograma extends Grafico {
     }
 }
 
-/* let vetorBarras = [
+let vetorBarras = [
     {x:1, y:5},
     {x:2, y:3},
     {x:3, y:7},
@@ -185,9 +197,11 @@ class Histograma extends Grafico {
     {x:7, y:10},
     {x:8, y:9},
     {x:9, y:8},
+    {x:10, y:35}
 ]
-let hist = new Histograma()
-hist.atribuiDados(vetorBarras) */
+/* let hist = new Histograma()
+hist.atribuiDados(vetorBarras)
+hist.adicionaLabels('fdgsikjhdfkjjhfsdokjh', 'lucas dfgasdfad', 'dfadsfadsfdsf') */
 
 class ScatterPlot extends Grafico {
     constructor() {
@@ -204,7 +218,7 @@ class ScatterPlot extends Grafico {
             .range([this.margemHorizontal, this.largura - (this.margemEsquerda)])
         this.scalaY = d3.scaleLinear()
             .domain([this.maximos.yMax + 50, 0])
-            .range([this.margemVertical, this.altura - this.margemHorizontalVertical])
+            .range([this.margemVertical, this.altura - this.margemVertical])
     }
 
     atribuiDados(dados) {
@@ -253,7 +267,9 @@ class ScatterPlot extends Grafico {
     zoomedX() {
         let novaScalaX = d3.event.transform.rescaleX(this.scalaX)
         this.eixoX.scale(novaScalaX)
+        this.gridX.scale(novaScalaX)
         this.svg.select('.eixoX').call(this.eixoX)
+        this.svg.select('.gridX').call(this.gridX)
         this.svg.selectAll('circle')
             .attr('cx', (d) => {return novaScalaX(d.x)})
     }
@@ -261,7 +277,9 @@ class ScatterPlot extends Grafico {
     zoomedY() {
         let novaScalaY = d3.event.transform.rescaleY(this.scalaY)
         this.eixoY.scale(novaScalaY)
+        this.gridY.scale(novaScalaY)
         this.svg.select('.eixoY').call(this.eixoY)
+        this.svg.select('.gridY').call(this.gridY)
         this.svg.selectAll('circle')
             .attr('cy', (d) => {return novaScalaY(d.y)})
     }
@@ -356,18 +374,22 @@ class Serie extends Grafico {
         let t = d3.event.transform
         let novaScalaX = t.rescaleX(this.scalaX)
         this.eixoX.scale(novaScalaX)
+        this.gridX.scale(novaScalaX)
         this.svg.select('.eixoX').call(this.eixoX)
+        this.svg.select('.gridX').call(this.gridX)
         this.svg.selectAll('polyline')
-            .attr('transform', `translate(${t.x}, 0)`)
+            .attr('transform', `translate(${t.x})`)
     }
 
     zoomedY() {
         let t = d3.event.transform
         let novaScalaY = t.rescaleY(this.scalaY)
         this.eixoY.scale(novaScalaY)
+        this.gridY.scale(novaScalaY)
         this.svg.select('.eixoY').call(this.eixoY)
+        this.svg.select('.gridY').call(this.gridY)
         this.svg.selectAll('polyline')
-            .attr('transform', `translate(0, ${t.y})`)
+            .attr('transform', `translate(0 ${t.y})`)
     }
 }
 

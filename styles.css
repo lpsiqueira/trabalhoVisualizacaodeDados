@@ -13,3 +13,7 @@ shape-rendering: crispEdges;
 .grid path {
 stroke-width: 0;
 }
+
+.label {
+    text-align: center;
+}
