@@ -359,13 +359,20 @@ class Serie extends Grafico {
 
     zoomedX() {
         let t = d3.event.transform
-        let novaScalaX = t.rescaleX(this.scalaX)
-        this.eixoX.scale(novaScalaX)
-        this.gridX.scale(novaScalaX)
+        let novaEscalaX= t.rescaleX(this.scalaX)
+        this.eixoX.scale(novaEscalaX)
+        this.gridX.scale(novaEscalaX)
         this.svg.select('.eixoX').call(this.eixoX)
         this.svg.select('.gridX').call(this.gridX)
         this.svg.selectAll('polyline')
-            .attr('transform', `translate(${t.x})`)
+            .attr("points", (d) => {
+                let saida = ''
+                console.log(d)
+                for(let ponto of d) {
+                    saida += `${novaEscalaX(ponto.x)} ${this.scalaY(ponto.y)}, `
+                }
+                return saida
+            })
     }
 
     zoomedY() {
@@ -376,6 +383,13 @@ class Serie extends Grafico {
         this.svg.select('.eixoY').call(this.eixoY)
         this.svg.select('.gridY').call(this.gridY)
         this.svg.selectAll('polyline')
-            .attr('transform', `translate(0 ${t.y})`) */
+            .attr("points", (d) => {
+                let saida = ''
+                console.log(d)
+                for(let ponto of d) {
+                    saida += `${this.scalaX(ponto.x)} ${novaScalaY(ponto.y)}, `
+                }
+                return saida
+            }) */
     }
 }
