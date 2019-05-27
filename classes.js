@@ -193,7 +193,7 @@ class Histograma extends Grafico {
                     .attr('height', (d) => this.altura - this.margemVertical - this.scalaY(d.y))
                     .attr('width', (d) => this.scalaX.bandwidth())
                     .attr('fill', cores[i])
-                    .attr('data-group', `${this.dados.length-1}`)
+                    .attr('data-group', `${i}`)
                     .attr('opacity', 0.5);
             }
             i++
@@ -220,18 +220,21 @@ class Histograma extends Grafico {
 
     brushed() {
         let sel = d3.event.selection
-
-        this.group[0].selectAll('rect')
-            .attr('fill', (d, a, b) => {
-                if (this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] && this.scalaY(d.y) >= sel[0][1] && this.scalaY(d.y) <= sel[1][1] && 
-                        this.scalaX(d.x)+this.scalaX.bandwidth() >= sel[0][0] && this.scalaX(d.x)+this.scalaX.bandwidth() <= sel[1][0] 
-                        ||
-                    this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] && this.scalaY(d.y) <= sel[0][1] && this.scalaY(d.y) <= sel[1][1]) {
-                    return 'black'
-                } else {
-                    return cores[b[a].attributes['data-group'].value]
-                }
-            })
+        let i = 0
+        for(let dados of this.dados) {
+            this.group[i].selectAll('rect')
+                .attr('fill', (d, a, b) => {
+                    if (this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] && this.scalaY(d.y) >= sel[0][1] && this.scalaY(d.y) <= sel[1][1] && 
+                            this.scalaX(d.x)+this.scalaX.bandwidth() >= sel[0][0] && this.scalaX(d.x)+this.scalaX.bandwidth() <= sel[1][0] 
+                            ||
+                        this.scalaX(d.x) >= sel[0][0] && this.scalaX(d.x) <= sel[1][0] && this.scalaY(d.y) <= sel[0][1] && this.scalaY(d.y) <= sel[1][1]) {
+                        return 'black'
+                    } else {
+                        return cores[b[a].attributes['data-group'].value]
+                    }
+                })
+            i++
+        }
     }
 }
 
