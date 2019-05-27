@@ -1,5 +1,7 @@
 testes.js
 .DS_Store
 tarefas.txt
+*.zip
 
-d3/
+d3/*
+!d3.js

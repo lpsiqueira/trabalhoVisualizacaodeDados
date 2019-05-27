@@ -162,7 +162,15 @@ class Histograma extends Grafico {
     criaEscala(i) {
         this.maximos = this.valoresMaximos()
 
-        this.dominio = this.dados[0].map((el) => el.x)
+        let dom = []
+        for(let dados of this.dados) {
+            dom = dom.concat(dados)
+        }
+        console.log(dom)
+
+
+        this.dominio = dom.map((el) => el.x)
+        console.log(this.dominio)
         this.scalaX = d3.scaleBand()
             .domain(this.dominio)
             .range([this.margemHorizontal, this.largura - (this.margemDireita)])
@@ -173,24 +181,39 @@ class Histograma extends Grafico {
     }
 
     preenche() {
+        this.svg.selectAll('.hist-dados').remove()
+        this.group = []
+        let i = 0
         for(let dados of this.dados) {
-            this.group[0].selectAll('rect').data(dados).enter().append('rect')
-                .attr("x", (d) => this.scalaX(d.x))
-                .attr("y", (d) => this.scalaY(d.y))
-                .attr('height', (d) => this.altura - this.margemVertical - this.scalaY(d.y))
-                .attr('width', (d) => this.scalaX.bandwidth())
-                .attr('fill', cores[0])
-                .attr('data-group', `${this.dados.length-1}`);
+            this.group.push(this.svg.append('g').attr('class', 'hist-dados'))
+            for(let pontos of dados) {
+                this.group[i].selectAll('rect').data(dados).enter().append('rect')
+                    .attr("x", (d) => this.scalaX(d.x))
+                    .attr("y", (d) => this.scalaY(d.y))
+                    .attr('height', (d) => this.altura - this.margemVertical - this.scalaY(d.y))
+                    .attr('width', (d) => this.scalaX.bandwidth())
+                    .attr('fill', cores[i])
+                    .attr('data-group', `${this.dados.length-1}`)
+                    .attr('opacity', 0.5);
+            }
+            i++
         }
+    }
+
+    criaMargens() {
+        this.svg.selectAll('.grid').remove()
+        this.svg.select('.eixoX').remove()
+        this.svg.select('.eixoY').remove()
+        super.criaMargens()
     }
 
     atribuiDados(dados) {
         this.dados.push(dados)
         this.criaEscala(this.dados.length)
-        super.criaMargens()
+        this.criaMargens()
         super.adicionaBrush()
         let svg = document.getElementById(this.tagsemhash).querySelector('.svg')
-        this.group.push(d3.select(svg).append('g'))
+        this.group.push(d3.select(svg).append('g').attr('class', 'hist-dados'))
         this.preenche()
 
     }

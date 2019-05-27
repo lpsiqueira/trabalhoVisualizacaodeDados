@@ -27,8 +27,19 @@
                 {x:9, y:8},
                 {x:10, y:35}
             ]
+            let vetorBarras2 = [                
+                {x:5, y:30},
+                {x:6, y:10},
+                {x:7, y:17},
+                {x:8, y:15},
+                {x:9, y:6},
+                {x:10, y:40},
+                {x:11, y:20},
+                {x:12, y:15}
+            ]
             let hist = new Histograma('d3-1')
             hist.atribuiDados(vetorBarras)
+            hist.atribuiDados(vetorBarras2)
             hist.adicionaLabels('Histograma', 'eixo X', 'eixo Y')
             hist.adicionaLegenda(['Dados 1'])
 
