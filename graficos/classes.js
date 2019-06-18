@@ -167,7 +167,6 @@ class Histograma extends Grafico {
             dom = dom.concat(dados)
         }
 
-
         this.dominio = dom.map((el) => el.x)
         this.scalaX = d3.scaleBand()
             .domain(this.dominio)
